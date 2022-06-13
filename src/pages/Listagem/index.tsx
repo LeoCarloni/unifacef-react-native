@@ -7,11 +7,13 @@ import {ButtonCard} from "../../components/ButtonCard";
 import {Alert, FlatList, View} from 'react-native';
 import {Background} from "../../components/Background";
 import {useNavigation} from "@react-navigation/native";
+import {useAuth} from "../../hooks/Auth.hooks";
 import {api} from "../../api";
 import {useToast} from "native-base";
 import {ToastLayout} from "../../components/ToastLayout";
 import {TabNavScreenNavigationProp} from "../../Routes/PrivateNavigation";
 import {useCarrinhoStore} from '../../store/Carrinho.store';
+import {useHistoricoStore} from '../../store/Historico.store';
 import {ActivityIndicator} from 'react-native';
 import {useMyTheme} from '../../hooks/Theme.hooks';
 import {BUTTON_CARD_HEIGHT} from '../../components/ButtonCard/styles';
@@ -35,7 +37,8 @@ export const Listagem: React.FC = () => {
 
     const {theme} = useMyTheme()
     const toast = useToast()
-
+    const {user} = useAuth()
+    const {historico, loadData} = useHistoricoStore()
     const getData = async (pageNumber=1)=>{
         setPage(pageNumber + 1);
         //await new Promise(success=>setTimeout(success,1000))
@@ -83,6 +86,9 @@ export const Listagem: React.FC = () => {
     }
     useEffect(()=>{
         getData(1)
+        if(user){
+            loadData(user.id, user.email)
+        }
     },[])
 
     const navigation = useNavigation<TabNavScreenNavigationProp>()
@@ -97,14 +103,14 @@ export const Listagem: React.FC = () => {
     },[addItem])
 
     const renderItem = useCallback(({item}) => (
-      <ButtonCard
-        item={item}
-        activeId={active}
-        setActive={setActive}
-        addCart={addCart}
-        goDetail={(id) => {
-            navigation.navigate('Detalhes', {id})
-        }}/>
+        <ButtonCard
+            item={item}
+            activeId={active}
+            setActive={setActive}
+            addCart={addCart}
+            goDetail={(id) => {
+                navigation.navigate('Detalhes', {id})
+            }}/>
     ),[active,setActive, addCart, navigation.navigate]);
 
     return (
@@ -131,7 +137,7 @@ export const Listagem: React.FC = () => {
                         return null;
                     }}
                     getItemLayout={(data, index) => (
-                      {length: BUTTON_CARD_HEIGHT, offset: BUTTON_CARD_HEIGHT * index, index}
+                        {length: BUTTON_CARD_HEIGHT, offset: BUTTON_CARD_HEIGHT * index, index}
                     )}
                 />
             </Container>

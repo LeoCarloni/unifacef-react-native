@@ -1,7 +1,8 @@
-import {Container, ContainerButton, ContainerCard, ImageCard, ItemTitle, ItemTitleBold} from './styles';
+import {Container, ContainerButton, ContainerCard, ImageCard, ItemTitle, ItemTitleBold, Label} from './styles';
 import {DefaultButton} from "../DefaultButton";
 import {LayoutAnimation, NativeModules, TouchableWithoutFeedback} from "react-native";
-import React,{memo} from "react";
+import React,{memo, useMemo} from "react";
+import {itemHistorico, useHistoricoStore} from '../../store/Historico.store';
 
 const { UIManager } = NativeModules;
 
@@ -26,6 +27,7 @@ interface ButtonCardProps {
 }
 
 const ButtonCardComponent: React.FC<ButtonCardProps> = ({item, goDetail, addCart, activeId, setActive}) => {
+    const {historico} = useHistoricoStore()
     const changeActive = ()=>{
         LayoutAnimation.linear()
         if(activeId===item.id)
@@ -33,17 +35,20 @@ const ButtonCardComponent: React.FC<ButtonCardProps> = ({item, goDetail, addCart
         else setActive(item.id)
     }
 
+    const isMine = useMemo(()=>historico.map(itemHistorico=>itemHistorico.jogoId).includes(item.id), [historico])
+
     return (
         <Container>
             <ContainerButton onPress={changeActive}>
                 <ImageCard source={{uri: item.img}} >
+                    {isMine&&<Label>ADQUIRIDO</Label>}
                     {activeId===item.id&&(
                         <TouchableWithoutFeedback onPress={changeActive}>
                             <ContainerCard>
                                 <ItemTitle ellipsizeMode={'clip'} numberOfLines={2}>{item.name}</ItemTitle>
                                 <ItemTitleBold>R$ {item.value.toFixed(2).toString().replace('.', ',')}</ItemTitleBold>
                                 <DefaultButton title={'DETALHES'}  onPress={()=>goDetail(item.id)}/>
-                                <DefaultButton title={'ADD CART'}  onPress={()=>addCart(item as any)}/>
+                                {!isMine&&<DefaultButton title={'ADD CART'}  onPress={()=>addCart(item as any)}/>}
                             </ContainerCard>
                         </TouchableWithoutFeedback>
                     )}
