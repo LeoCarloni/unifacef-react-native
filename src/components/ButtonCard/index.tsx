@@ -27,7 +27,7 @@ interface ButtonCardProps {
 }
 
 const ButtonCardComponent: React.FC<ButtonCardProps> = ({item, goDetail, addCart, activeId, setActive}) => {
-    const {historico} = useHistoricoStore()
+    const historico = useHistoricoStore(state=> state.historico)
     const changeActive = ()=>{
         LayoutAnimation.linear()
         if(activeId===item.id)
