@@ -5,6 +5,7 @@ import {Header} from "../../components/Header";
 import {ScrollView} from "react-native";
 import {Background} from "../../components/Background";
 import {ItemCarrinho, useCarrinhoStore} from '../../store/Carrinho.store';
+import {useHistoricoStore} from '../../store/Historico.store';
 import {AlertDialog, Button, useToast} from 'native-base';
 import {api} from '../../api';
 import {useAuth} from '../../hooks/Auth.hooks';
@@ -16,6 +17,7 @@ export const Carrinho: React.FC = () => {
 
     const removeItemStorte = useCarrinhoStore(state => state.removeItem)
     const carrinho = useCarrinhoStore(state => state.carrinho)
+    const loadData = useHistoricoStore(state => state.loadData)
     const clear = useCarrinhoStore(state => state.clear)
     const [itemWillDeleted, setItemWillDeleted] = useState<ItemCarrinho|undefined>(undefined);
 
@@ -37,6 +39,7 @@ export const Carrinho: React.FC = () => {
                     userEmail: user.email,
                     items: carrinho
                 })
+                await loadData(user.id, user.email)
                 setload(false)
                 clear();
                 navigation.navigate('Home');
@@ -92,13 +95,13 @@ export const Carrinho: React.FC = () => {
                         <Title maxWidth={80} align={'right'}>VALOR</Title>
                     </Box>
                     {carrinho.map(item=>(
-                      <ItemContainer key={`item-${item.jogoId}`}>
-                          <ActionColumn maxWidth={71}>
-                              <Trash name="trash" size={24} color="black" onPress={removeItem(item)}/>
-                          </ActionColumn>
-                          <Text>{item.titulo}</Text>
-                          <Text maxWidth={80} align={'right'}>R${item.valor.toFixed(2).toString().replace('.', ',')}</Text>
-                      </ItemContainer>
+                        <ItemContainer key={`item-${item.jogoId}`}>
+                            <ActionColumn maxWidth={71}>
+                                <Trash name="trash" size={24} color="black" onPress={removeItem(item)}/>
+                            </ActionColumn>
+                            <Text>{item.titulo}</Text>
+                            <Text maxWidth={80} align={'right'}>R${item.valor.toFixed(2).toString().replace('.', ',')}</Text>
+                        </ItemContainer>
                     ))}
 
 
@@ -111,9 +114,9 @@ export const Carrinho: React.FC = () => {
 
             </ScrollView>
             {total>0&&(
-              <Container>
-                  <DefaultButton  title={'FINALIZAR COMPRA'} loading={load} onPress={sendToBuy}/>
-              </Container>
+                <Container>
+                    <DefaultButton  title={'FINALIZAR COMPRA'} loading={load} onPress={sendToBuy}/>
+                </Container>
             )}
 
             <AlertDialog leastDestructiveRef={cancelRef} isOpen={!!itemWillDeleted} onClose={onClose}>
