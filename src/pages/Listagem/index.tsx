@@ -1,7 +1,9 @@
-import style, {Container, Title, TitleBold} from './styles';
+import style, {Container, Title, TitleBold, Box} from './styles';
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
 import {Header} from "../../components/Header";
+import {Input} from '../../components/Input';
+import {FontAwesome5, FontAwesome} from '@expo/vector-icons';
 
 import {ButtonCard} from "../../components/ButtonCard";
 import {Alert, FlatList, View} from 'react-native';
@@ -29,6 +31,8 @@ interface ItensProps {
 
 export const Listagem: React.FC = () => {
     const [active, setActive] = useState<number>()
+    const [pesquisa, setPesquisa] = useState<string>('')
+    const [pesquisaAtiva, setPesquisaAtiva] = useState<boolean>(false)
     const [page, setPage] = useState<number>(1)
     const [refreshing, setRefreshing] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
@@ -113,9 +117,26 @@ export const Listagem: React.FC = () => {
             }}/>
     ),[active,setActive, addCart, navigation.navigate]);
 
+    const filtro = useMemo(()=>!!pesquisa?list.filter(item=>item.name.toUpperCase().includes(pesquisa.toUpperCase())):list, [pesquisa, list])
     return (
         <Background>
-            <Header backFalse>
+            <Header
+                left={() => (
+                    <FontAwesome5 name={`search`} size={26} color={theme.colors.primary} onPress={()=>setPesquisaAtiva(true)}/>
+                )}
+                extra={() => (
+                    <>
+                        {pesquisaAtiva&&(<Box>
+                            <Input placeholder='Pesquisar'
+                                   onChangeText={setPesquisa}
+                                   value={pesquisa}
+                                   color={'#FFF'}
+                                   right={()=><FontAwesome name={`close`} size={26} color={theme.colors.danger   }style={{marginRight: -5, marginLeft: 10}} onPress={()=>{setPesquisaAtiva(false), setPesquisa('')}}/>}
+                                   left={()=><FontAwesome5 name={`search`} size={26} color={theme.colors.primary} style={{marginRight: 10, marginLeft: -5}}/>}
+                            />
+                        </Box>)}
+                    </>
+                )} backFalse>
                 <Title><TitleBold>My</TitleBold>Collection</Title>
             </Header>
             <Container>
@@ -124,7 +145,7 @@ export const Listagem: React.FC = () => {
                     keyExtractor={(item) => `${item.id}`}
                     style={style.flatList}
                     numColumns={2}
-                    data={list}
+                    data={filtro}
                     refreshing={refreshing}
                     onRefresh={reset}
                     onEndReached={updateData}

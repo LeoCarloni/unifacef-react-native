@@ -11,9 +11,11 @@ import {useNavigation} from "@react-navigation/native";
 interface HeaderProps{
     title?:string;
     backFalse?:boolean;
+    left?:()=> React.ReactNode;
+    extra?:()=> React.ReactNode;
 }
-export const Header: React.FC<HeaderProps> = ({children, title, backFalse=false}) => {
-   const { theme, changeTheme } = useMyTheme()
+export const Header: React.FC<HeaderProps> = ({children, title, backFalse=false, left, extra}) => {
+    const { theme, changeTheme } = useMyTheme()
     const [dark, setDark] = useState<boolean>(true)
     const changeDark = () =>{
         changeTheme();
@@ -27,8 +29,10 @@ export const Header: React.FC<HeaderProps> = ({children, title, backFalse=false}
         <BKGSafe>
             <SafeAreaView />
             <BKG>
+                {extra&&extra()}
                 <LeftContainer>
                     {!backFalse&&navigation.canGoBack()&&(<Ionicons name="chevron-back" size={30} color={theme.colors.primary} style={styles.back} onPress={navigation.goBack}/>)}
+                    {left&&left()}
                 </LeftContainer>
                 <TitleContainer>
                     {!!title?(<Title>{title}</Title>):(children)}
